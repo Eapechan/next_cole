@@ -1,0 +1,11 @@
+Date,Activity Type,Quantity,Unit,Location,Notes
+2024-01-15,Diesel Fuel,5000,litres,Block A,Heavy equipment operation
+2024-01-14,Electricity,8500,kWh,Processing Plant,Daily operations
+2024-01-13,Vehicle Transport,2500,km,Transport Fleet,Coal transportation
+2024-01-12,Coal Combustion,12000,tonnes,Power Plant,Monthly coal burn
+2024-01-11,Diesel Fuel,3200,litres,Block B,Excavator operations
+2024-01-10,Electricity,7200,kWh,Processing Plant,Weekend operations
+2024-01-09,Vehicle Transport,1800,km,Transport Fleet,Local deliveries
+2024-01-08,Coal Combustion,9800,tonnes,Power Plant,Regular operations
+2024-01-07,Diesel Fuel,4100,litres,Block C,Drilling operations
+2024-01-06,Electricity,6300,kWh,Processing Plant,Maintenance day 
