@@ -1,3 +1,4 @@
+import { GoogleMapsTest } from "@/components/GoogleMapsTest";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -392,6 +393,7 @@ const Admin = () => {
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="compliance">Compliance Tracking</TabsTrigger>
           <TabsTrigger value="regions">Regional Analysis</TabsTrigger>
+          <TabsTrigger value="maps">Google Maps Test</TabsTrigger>
         </TabsList>
 
         <TabsContent value="mines" className="space-y-6">
@@ -580,6 +582,10 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="maps" className="space-y-6">
+          <GoogleMapsTest />
         </TabsContent>
       </Tabs>
 

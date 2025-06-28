@@ -1,19 +1,18 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
-import { useData } from "@/contexts/DataContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAvailableSinkTypes, calculateCarbonSink, formatCO2Value } from "@/lib/calculations";
-import { Loader2, Plus, TreePine, Leaf, MapPin, Upload, Map, Globe, FileText } from "lucide-react";
+import { useData } from "@/contexts/DataContext";
+import { useToast } from "@/hooks/use-toast";
+import { calculateCarbonSink, formatCO2Value, getAvailableSinkTypes } from "@/lib/calculations";
+import { Globe, Leaf, Loader2, Map, MapPin, Plus, TreePine, Upload } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // Vegetation types with carbon sequestration rates (tonnes CO2e per hectare per year)
 const VEGETATION_TYPES = [
@@ -141,25 +140,41 @@ const CarbonSink = () => {
     // Do not set default coordinates here. Only toggle the map visibility.
   };
 
-  // Improved Google Maps link parser
+  // Improved Google Maps link parser with better pattern matching
   const parseGoogleMapsLink = (link: string) => {
     try {
       let coordinates = null;
-      // Try to extract from common URL patterns
+      
+      // Enhanced patterns for different Google Maps URL formats
       const patterns = [
+        // Standard Google Maps coordinates
         /@(-?\d+\.\d+),(-?\d+\.\d+)/, // @lat,lng
         /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/, // ?q=lat,lng
         /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ?ll=lat,lng
         /\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/, // /place/lat,lng
+        /[?&]center=(-?\d+\.\d+),(-?\d+\.\d+)/, // ?center=lat,lng
+        /[?&]saddr=(-?\d+\.\d+),(-?\d+\.\d+)/, // ?saddr=lat,lng
+        /[?&]daddr=(-?\d+\.\d+),(-?\d+\.\d+)/, // ?daddr=lat,lng
         /^(-?\d+\.\d+),(-?\d+\.\d+)$/ // direct lat,lng
       ];
+      
       for (const pattern of patterns) {
         const match = link.match(pattern);
         if (match) {
-          coordinates = { lat: parseFloat(match[1]).toFixed(6), lng: parseFloat(match[2]).toFixed(6) };
-          break;
+          const lat = parseFloat(match[1]);
+          const lng = parseFloat(match[2]);
+          
+          // Validate coordinates
+          if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            coordinates = { 
+              lat: lat.toFixed(6), 
+              lng: lng.toFixed(6) 
+            };
+            break;
+          }
         }
       }
+      
       return coordinates;
     } catch (error) {
       console.error('Error parsing Google Maps link:', error);
@@ -167,23 +182,52 @@ const CarbonSink = () => {
     }
   };
 
-  // Update handleMapsLinkPaste to use lat/lng from backend if available, as part of the advanced extraction logic
+  // Enhanced maps link handler with fallback options
   const handleMapsLinkPaste = async (link: string) => {
     setMapsLink(link);
+    
+    // First try to parse the link directly
     let coords = parseGoogleMapsLink(link);
+    
+    // If no coordinates found and it's a short link, try to expand it
     if (!coords && (link.includes('maps.app.goo.gl') || link.includes('goo.gl/maps'))) {
       try {
-        const res = await fetch(`http://localhost:3001/expand?url=${encodeURIComponent(link)}`);
-        const data = await res.json();
-        if (data.lat && data.lng) {
-          coords = { lat: parseFloat(data.lat).toFixed(6), lng: parseFloat(data.lng).toFixed(6) };
-        } else if (data.expanded) {
-          coords = parseGoogleMapsLink(data.expanded);
+        // Try the backend service first
+        const res = await fetch(`http://localhost:3001/expand?url=${encodeURIComponent(link)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data.lat && data.lng) {
+            coords = { lat: parseFloat(data.lat).toFixed(6), lng: parseFloat(data.lng).toFixed(6) };
+          } else if (data.expanded) {
+            coords = parseGoogleMapsLink(data.expanded);
+          }
         }
       } catch (err) {
-        // Ignore backend errors, fallback to manual
+        console.log('Backend service not available, trying alternative methods');
+        
+        // Fallback: Try to extract from the URL structure
+        try {
+          // For some short links, we can try to follow the redirect manually
+          const response = await fetch(link, { 
+            method: 'HEAD',
+            redirect: 'follow'
+          });
+          
+          if (response.url) {
+            coords = parseGoogleMapsLink(response.url);
+          }
+        } catch (fallbackErr) {
+          console.log('Fallback method also failed');
+        }
       }
     }
+    
     if (coords && coords.lat && coords.lng) {
       setMapCoordinates(coords);
       toast({
@@ -191,9 +235,10 @@ const CarbonSink = () => {
         description: `Coordinates extracted: ${coords.lat}, ${coords.lng}`,
       });
     } else {
+      // Provide helpful guidance
       toast({
         title: "Could Not Extract Coordinates",
-        description: "Please use a Google Maps URL with coordinates or enter them manually.",
+        description: "Try right-clicking on Google Maps, selecting 'What's here?', then copying the URL with coordinates.",
         variant: "destructive"
       });
     }

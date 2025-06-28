@@ -11,6 +11,58 @@ A comprehensive carbon neutrality platform designed specifically for Indian coal
 - **Multi-User Support**: Role-based access for mine operators, regulators, and administrators
 - **Comprehensive Reporting**: Generate detailed PDF reports for compliance and analysis
 - **Dashboard Analytics**: Visualize emission trends and reduction progress
+- **Land Area Calculator**: Advanced carbon offset calculation with location mapping
+
+## 🗺️ Google Maps Integration
+
+The platform includes enhanced Google Maps integration for the Land Area Calculator:
+
+### Features
+
+- **Automatic coordinate extraction** from Google Maps URLs
+- **Multiple URL format support** (standard, search, place, short URLs)
+- **Backend service** for expanding shortened URLs
+- **Interactive map preview** with embedded Google Maps
+- **Manual coordinate entry** with validation
+- **Location validation** and error handling
+
+### Quick Start for Maps Service
+
+1. **Start the backend service** (optional, for short URLs):
+
+   ```bash
+   # Windows
+   start-maps-service.bat
+
+   # Or manually
+   cd maps-expander
+   npm install
+   node index.js
+   ```
+
+2. **Test the integration**:
+   - Go to Admin Panel → "Google Maps Test" tab
+   - Try the quick test URLs
+   - Verify backend service status
+
+### Usage in Land Area Calculator
+
+1. Navigate to "Carbon Sink" → "Land Area Calculator"
+2. **Method 1**: Paste Google Maps URL with coordinates
+3. **Method 2**: Enter coordinates manually
+4. **Method 3**: Use "Paste Coordinates" button
+5. View map preview to confirm location
+
+### Supported URL Formats
+
+```
+https://www.google.com/maps/@23.5937,78.9629,15z
+https://www.google.com/maps?q=28.6139,77.2090
+https://www.google.com/maps/place/19.0760,72.8777
+23.5937,78.9629
+```
+
+For detailed instructions, see [GOOGLE_MAPS_INTEGRATION_GUIDE.md](./GOOGLE_MAPS_INTEGRATION_GUIDE.md).
 
 ## 🚀 Quick Start
 
@@ -239,4 +291,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **NextCoal Initiative** - Empowering coal mines for carbon neutrality 🌱
-"# NextCoal-Initiative" 
+"# NextCoal-Initiative"
